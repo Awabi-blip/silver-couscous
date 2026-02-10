@@ -278,7 +278,7 @@ BEGIN
             'not possible';
     END IF;
 
-    p_sender_balance := (SELECT balance FROM points_balance WHERE user_id = p_sender_id);
+    p_sender_balance := (SELECT balance FROM points_balance WHERE user_id = p_sender_id FOR UPDATE);
 
     IF p_sender_balance IS NULL THEN
         RAISE EXCEPTION 'no balance added, hence no transactions must take place, fair as all things must be. period.';
@@ -317,7 +317,7 @@ BEGIN
         RAISE EXCEPTION 'no such gift';
     END IF;
 
-    p_sender_balance := (SELECT balance FROM points_balance WHERE user_id = p_sender_id);
+    p_sender_balance := (SELECT balance FROM points_balance WHERE user_id = p_sender_id FOR UPDATE);
 
     IF p_sender_balance IS NULL THEN
         RAISE EXCEPTION 'no balance added, hence no transactions must take place, fair as all things must be. period.';
