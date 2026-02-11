@@ -256,7 +256,7 @@ AS $$
 DECLARE
 p_verified BOOLEAN;
 BEGIN
-    p_verified := (SELECT verified FROM users WHERE id = p_user_id);
+    p_verified := (SELECT verified FROM users WHERE id = p_user_id FOR UPDATE);
 
     IF p_verified = FALSE THEN
         RAISE EXCEPTION 'this action cannot be done';
@@ -278,6 +278,21 @@ BEGIN
             'not possible';
     END IF;
 
+    -- ADDED this to lock both rows upon transaction's start. This locks sender and reciever both to prevent deadlocks
+    -- Imagine a scanerio where line 285 runs and it locks the sender, and then in another transaction, sender is the receiver
+    -- and the row is locked for that sender, and imagine that the sender in that transaction is the receiver in this transaction
+    -- that puts a deadlock.
+    -- TRANSACTION A: Awab sender, Zoya Receiver
+    -- SELECT FOR UPDATE AWAB -> Awab gets locked, 
+    -- TRANSACTION B: Zoya sender, Awab Reciever
+    -- SELECT FOR UPDATE Zoya -> Zoya gets locked,
+    -- CODE in TRANSACTION A reaches "UPDATE SEND BALANCE += AMOUNT WHERE USER IS ZOYA but zoya is locked"
+    -- CODE in TRANSACTION B reached "UPDATE SEND BALANCE += AMOUNT WHERE USER IS AWAB but awab is locked"
+    -- BOTH transactions come at a halt, because they can't go ahead, and this is a deadlock, so we lock both rows to begin with
+    -- the user that wins the race condition gets to make the entire transaction first, if awab locks both zoya and awab, and 
+    -- zoya tries to read her own balance, shes locked because awab is sending her money first.
+    PERFORM 1 FROM points_balance WHERE user_id IN (P_SENDER_ID, p_receiver_id) FOR UPDATE;
+    
     p_sender_balance := (SELECT balance FROM points_balance WHERE user_id = p_sender_id FOR UPDATE);
 
     IF p_sender_balance IS NULL THEN
