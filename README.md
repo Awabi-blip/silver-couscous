@@ -104,8 +104,8 @@ The database has entities such as : USERS, SERVERS, ROLES, MESSAGES_IN_SERVERS, 
 ### Relationships
 <img width="1601" height="827" alt="contra_ERD_1" src="https://github.com/user-attachments/assets/ea8ae1b7-b95f-4eb0-8b82-2b7004b3adcb" />
 
-**USERS**
-`have a many to many relationship with servers as in one user can be in many servers, and more than one server can have the same user. The user must only have one role within the server, as accomplished by the junction table *users_in_servers*, which by default adds the member role to the user upon joining, unless specified otherwise. The **PK** for *users_in_servers* is essentially the *user_id* in composition with the *server_id* as it enforces the rule for one user having only one role within the server. User itself has a many to many relationship with roles, as in one user might have multiple roles, but not within the same server, and similarly the same role i.e member can be shared by multiple users`/
+
+**users** have a many to many relationship with servers as in one user can be in many servers, and more than one server can have the same user. The user must only have one role within the server, as accomplished by the junction table *users_in_servers*, which by default adds the member role to the user upon joining, unless specified otherwise. The **PK** for *users_in_servers* is essentially the *user_id* in composition with the *server_id* as it enforces the rule for one user having only one role within the server. User itself has a many to many relationship with roles, as in one user might have multiple roles, but not within the same server, and similarly the same role i.e member can be shared by multiple users
 
 The **messages_in_servers** table has a many to many relationship with users and a many to manyrelationship with servers. One user can have many messages, and one server can host many messages.The user must be in the server in order to send messages.
 
